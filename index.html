@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Super Marley — Cajera</title>
+  <link rel="stylesheet" href="src/css/styles.css">
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="brand">
+        <div class="logo">M</div>
+        <div>
+          <h1>Super Marley — Cajera</h1>
+          <div class="mini">Flujo: seleccionar → crear orden → (aparece en /kitchen)</div>
+        </div>
+      </div>
+    </header>
+
+    <section class="grid">
+      <div class="card">
+        <h2>Menú</h2>
+        <div class="body">
+          <div id="filtrosCategorias" class="toolbar" style="margin-bottom:12px; overflow-x:auto;"></div>
+          <div id="menu" class="menu"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Carrito</h2>
+        <div class="body">
+          <div id="cart" class="cart"></div>
+          <div style="margin-top:10px;">
+            <label for="notaCart" class="mini">Nota global para la orden</label>
+            <input id="notaCart" type="text" placeholder="para llevar, sin cubiertos…" style="width:100%;" />
+          </div>
+          <div class="totals">
+            <strong>Total: <span id="cartTotal">$0.00</span></strong>
+            <div class="toolbar">
+              <button id="btnVaciar" class="btn ghost">Vaciar</button>
+              <button id="btnCrearOrden" class="btn primary">Crear orden →</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script src="src/js/ui-common.js"></script>
+  <script src="src/js/menu-data.js"></script>
+  <script src="src/js/state.js"></script>
+  <script src="src/js/cashier.js"></script>
+</body>
+</html>
