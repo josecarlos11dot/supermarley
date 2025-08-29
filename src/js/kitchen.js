@@ -1,27 +1,28 @@
 (function(){
-  // --- Doble tap / doble clic helper ---
+  // --- Doble tap / doble clic con debounce ---
   function addDoubleTap(el, windowMs, onFire){
-    let last = 0, hintTimer = null;
+    let last = 0, hintTimer = null, locked = false;
     function showHint(){
       const prev = el.textContent;
       el.textContent = 'Toca de nuevo para servir';
       el.classList.add('primary');
       clearTimeout(hintTimer);
-      hintTimer = setTimeout(()=>{ el.textContent = prev; el.classList.remove('primary'); }, 1200);
+      hintTimer = setTimeout(()=>{ el.textContent = prev; el.classList.remove('primary'); }, 900);
     }
     function handle(){
+      if(locked) return;
       const now = Date.now();
-      if(now - last <= windowMs){ // segundo tap
+      if(now - last <= windowMs){
         clearTimeout(hintTimer);
-        onFire();
-      } else { // primer tap
+        locked = true;           // evita nuevos toques
+        onFire(()=>{ locked=false; }); // callback por si quieres liberar
+      }else{
         showHint();
       }
       last = now;
     }
-    // móvil y desktop
     el.addEventListener('click', handle);
-    el.addEventListener('dblclick', (e)=>{ e.preventDefault(); onFire(); });
+    el.addEventListener('dblclick', e=>{ e.preventDefault(); if(!locked){ locked=true; onFire(()=>{ locked=false; }); }});
   }
 
   function renderPendientes(){
@@ -52,10 +53,19 @@
         '<div style="text-align:right; font-weight:800;">Total: ' + money(orden.total) + '</div>';
 
       const btnServir = card.querySelector('[data-act="servir"]');
-      addDoubleTap(btnServir, 400, function(){
+
+      addDoubleTap(btnServir, 400, function(done){
+        // feedback inmediato + bloqueo
         btnServir.textContent = 'Sirviendo…';
         btnServir.disabled = true;
-        window.SMState.moverAPapelera(orden.id,'servida');
+        card.style.transition = 'opacity .25s ease, transform .25s ease';
+        card.style.opacity = '0.55';
+        card.style.transform = 'scale(0.98)';
+
+        // Optimista: quita la tarjeta rápido (por UX)…
+        setTimeout(()=>{ try{ card.remove(); }catch{} }, 250);
+        // …y mueve a papelera (esto dispara el re-render oficial)
+        setTimeout(()=>{ window.SMState.moverAPapelera(orden.id,'servida'); done&&done(); }, 30);
       });
 
       cont.appendChild(card);
