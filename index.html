@@ -27,7 +27,8 @@
         </div>
       </div>
 
-      <div class="card">
+      <!-- Carrito (desktop/tablet). Se oculta en mobile -->
+      <div id="cardCart" class="card">
         <h2>Carrito</h2>
         <div class="body">
           <div id="cart" class="cart"></div>
@@ -46,6 +47,33 @@
       </div>
     </section>
   </div>
+
+  <!-- Mini barra fija (mobile) -->
+  <div id="miniCartBar" class="mini-cart hidden">
+    <button id="miniCartOpen" class="btn primary">🛒 <span id="miniCount">0</span> · <span id="miniTotal">$0.00</span> — Ver</button>
+    <button id="miniCreate" class="btn warn">Crear orden →</button>
+  </div>
+
+  <!-- Drawer / modal del carrito (mobile) -->
+  <dialog id="cartDrawer" class="drawer">
+    <div class="drawer-content">
+      <header class="drawer-head">
+        <strong>Carrito</strong>
+        <button id="drawerClose" class="btn ghost">Cerrar</button>
+      </header>
+      <div id="cartDrawerBody" class="cart" style="max-height:50vh; overflow:auto;"></div>
+      <div class="drawer-foot">
+        <input id="notaCartMobile" type="text" placeholder="nota global (opcional)" />
+        <div class="totals" style="padding:0;">
+          <strong>Total: <span id="cartTotalMobile">$0.00</span></strong>
+          <div class="toolbar">
+            <button id="btnVaciarMobile" class="btn ghost">Vaciar</button>
+            <button id="btnCrearOrdenMobile" class="btn primary">Crear orden →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </dialog>
 
   <script src="src/js/ui-common.js"></script>
   <script src="src/js/menu-data.js"></script>
