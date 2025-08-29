@@ -14,8 +14,8 @@
       const now = Date.now();
       if(now - last <= windowMs){
         clearTimeout(hintTimer);
-        locked = true;           // evita nuevos toques
-        onFire(()=>{ locked=false; }); // callback por si quieres liberar
+        locked = true;
+        onFire(()=>{ locked=false; });
       }else{
         showHint();
       }
@@ -55,16 +55,12 @@
       const btnServir = card.querySelector('[data-act="servir"]');
 
       addDoubleTap(btnServir, 400, function(done){
-        // feedback inmediato + bloqueo
         btnServir.textContent = 'Sirviendo…';
         btnServir.disabled = true;
         card.style.transition = 'opacity .25s ease, transform .25s ease';
         card.style.opacity = '0.55';
         card.style.transform = 'scale(0.98)';
-
-        // Optimista: quita la tarjeta rápido (por UX)…
         setTimeout(()=>{ try{ card.remove(); }catch{} }, 250);
-        // …y mueve a papelera (esto dispara el re-render oficial)
         setTimeout(()=>{ window.SMState.moverAPapelera(orden.id,'servida'); done&&done(); }, 30);
       });
 
@@ -72,10 +68,11 @@
     });
   }
 
-  function renderPapelera(){
-    const cont = $('#papelera'); cont.innerHTML='';
-    const list = window.SMState.getPapelera();
-    if(list.length===0){ cont.innerHTML = '<div class="mini">Vacía.</div>'; return; }
+  function renderServidos(){
+    const cont = $('#servidos'); cont.innerHTML='';
+    // usa alias getServidos (antes papelera)
+    const list = (window.SMState.getServidos ? window.SMState.getServidos() : window.SMState.getPapelera());
+    if(list.length===0){ cont.innerHTML = '<div class="mini">Vacío.</div>'; return; }
 
     list.forEach(function(rec){
       const hora = new Date(rec.timestamp).toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'});
@@ -96,6 +93,7 @@
   }
 
   window.addEventListener('sm:pendientes:update', renderPendientes);
-  window.addEventListener('sm:papelera:update', renderPapelera);
-  renderPendientes(); renderPapelera();
+  window.addEventListener('sm:servidos:update', renderServidos);   // nuevo nombre
+  window.addEventListener('sm:papelera:update', renderServidos);   // compat
+  renderPendientes(); renderServidos();
 })();

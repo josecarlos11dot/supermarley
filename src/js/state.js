@@ -9,12 +9,18 @@
   function save(k, v){ localStorage.setItem(k, JSON.stringify(v)); }
   const chan = new BroadcastChannel('super_marley_bus');
   function publish(type, payload){ chan.postMessage({ type, payload, ts: Date.now() }); }
+  function emitLocal(evt){ window.dispatchEvent(new CustomEvent(evt)); }
+
   window.SMState = {
     getPendientes(){ return [...STATE.pendientes]; },
-    getPapelera(){ return [...STATE.papelera]; },
+    getPapelera(){ return [...STATE.papelera]; },       // compat
+    getServidos(){ return [...STATE.papelera]; },       // alias
     crearOrden(orden){
       STATE.pendientes.unshift(orden);
       save(KEYS.PEND, STATE.pendientes);
+      // avisos locales inmediatos
+      emitLocal('sm:pendientes:update');
+      // broadcast a otras pestañas
       publish('pendientes:update', STATE.pendientes);
     },
     moverAPapelera(id, motivo){
@@ -26,23 +32,33 @@
       STATE.papelera = STATE.papelera.slice(0,5);
       save(KEYS.PEND, STATE.pendientes);
       save(KEYS.BIN, STATE.papelera);
+      // avisos locales inmediatos
+      emitLocal('sm:pendientes:update');
+      emitLocal('sm:papelera:update');
+      emitLocal('sm:servidos:update'); // nuevo nombre
+      // broadcast a otras pestañas
       publish('pendientes:update', STATE.pendientes);
-      publish('papelera:update', STATE.papelera);
+      publish('papelera:update',   STATE.papelera);
     }
   };
+
+  // Cuando llegan eventos de otras pestañas, sincroniza y emite locales
   chan.addEventListener('message', (e)=>{
     const { type, payload } = e.data || {};
     if(type==='pendientes:update'){
       STATE.pendientes = payload; save(KEYS.PEND, STATE.pendientes);
-      window.dispatchEvent(new CustomEvent('sm:pendientes:update'));
+      emitLocal('sm:pendientes:update');
     }
     if(type==='papelera:update'){
       STATE.papelera = payload; save(KEYS.BIN, STATE.papelera);
-      window.dispatchEvent(new CustomEvent('sm:papelera:update'));
+      emitLocal('sm:papelera:update');
+      emitLocal('sm:servidos:update');
     }
   });
+
+  // storage (otras pestañas con localStorage)
   window.addEventListener('storage', (e)=>{
-    if(e.key===KEYS.PEND){ STATE.pendientes = load(KEYS.PEND, []); window.dispatchEvent(new CustomEvent('sm:pendientes:update')); }
-    if(e.key===KEYS.BIN){  STATE.papelera   = load(KEYS.BIN,  []); window.dispatchEvent(new CustomEvent('sm:papelera:update')); }
+    if(e.key===KEYS.PEND){ STATE.pendientes = load(KEYS.PEND, []); emitLocal('sm:pendientes:update'); }
+    if(e.key===KEYS.BIN){  STATE.papelera   = load(KEYS.BIN,  []); emitLocal('sm:papelera:update'); emitLocal('sm:servidos:update'); }
   });
 })();
